@@ -21,20 +21,42 @@ class Client {
         }.bind(this));
     }
 
+    send(line) {
+        var resp = this.server.recv(line);
+        if (resp === this.server.EOF) {
+            this.mode = this.readingNewRequests;
+            return false;
+        } else if (typeof resp === 'string') {
+            var lines = resp.split('\n');
+            for (var j = 0; j < lines.length; j++) {
+                console.log('server: ' + lines[j]);
+            }
+        }
+        return true;
+    }
+
     readingNewRequests(line) {
         var match = line.match(requestPattern);
         if (match !== null) {
+            line += ' HTTP/1.1';
+            readline.moveCursor(process.stdout, PROMPT.length, -1);
+            console.log(line);
             var method = match[1];
-            var fullPath = match[2];
-            this.currentReq = {
-                method: method
-            };
-            this.currentReq = this.server.parseQueryString(fullPath, this.currentReq);
-
             if (method === 'POST') {
-                this.mode = this.readingBody;
+                var ok = this.send(line);
+                if (ok) {
+                    this.mode = this.readingBody;
+                } else {
+                    this.rl.prompt();
+                }
             } else {
-                this.server.handle(this.currentReq);
+                var vals = [line, ''];
+                for (var i = 0; i < vals.length; i++) {
+                    var ok = this.send(vals[i]);
+                    if (!ok) {
+                        break;
+                    }
+                }
                 this.rl.prompt();
             }
         } else {
@@ -43,25 +65,25 @@ class Client {
     }
 
     readingBody(line) {
-        var bodyStr = line.trim();
-        var data = JSON.parse(bodyStr);
+        line = line.trim();
         readline.moveCursor(process.stdout, 0, -1);
         readline.clearLine(process.stdout, 0);
 
-        this.currentReq.headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': bodyStr.length
+        var vals = [
+            'Content-Type: application/json',
+            `Content-Length: ${line.length}`,
+            '',
+            line,
+            ''
+        ]
+        for (var i = 0; i < vals.length; i++) {
+            var val = vals[i];
+            console.log(PROMPT + val);
+            var ok = this.send(val);
+            if (!ok) {
+                break;
+            }
         }
-        this.currentReq.body = bodyStr
-
-        for (var header in this.currentReq.headers) {
-            var headerVal = this.currentReq.headers[header];
-            console.log(PROMPT + `${header}: ${headerVal}`);
-        }
-        console.log(PROMPT);
-        console.log(PROMPT + this.currentReq.body);
-
-        this.server.handle(this.currentReq);
         this.rl.prompt();
         this.mode = this.readingNewRequests;
     }

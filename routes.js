@@ -49,7 +49,7 @@ routes.GET['/world'] = function (req) {
 var gimmeData = []
 routes.GET['/api/gimme'] = function (req) {
     var responseData = {
-        here: 'is some data',
+        here: 'is some data. Add more with POST /api/gimme',
         data: gimmeData
     };
     var body = JSON.stringify(responseData, null, 2);
