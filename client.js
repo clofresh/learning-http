@@ -46,6 +46,7 @@ class Client {
                 var ok = this.send(line);
                 if (ok) {
                     this.mode = this.readingBody;
+                    process.stdout.write('Enter some json: ');
                 } else {
                     this.rl.prompt();
                 }
