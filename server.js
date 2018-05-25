@@ -4,6 +4,10 @@ const PROMPT = 'server: ';
 
 const requestPattern = /^([^ ]*) ([^ ]*) (.*)$/
 
+/**
+ * Server is a valid http server that receives line input on recv and returns
+ * http responses as strings.
+ */
 class Server {
 
     constructor(routes) {
@@ -69,6 +73,10 @@ class Server {
         }
     }
 
+    /**
+     * Once an http request has been full parsed, dispatch finds and calls the
+     * proper route to handle it based on method and path.
+     */
     dispatch(req) {
         var routesByMethod = this.routes[req.method]
         var output = '';

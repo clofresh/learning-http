@@ -5,19 +5,6 @@ const routes = {
     DELETE: {}
 };
 
-function formatResponse(res) {
-    var output = [];
-    output.push('HTTP/1.1 ' + res.status);
-    if (res.headers) {
-        for (var key in res.headers) {
-            output.push(`${key}: ${res.headers[key]}`)
-        }
-    }
-    output.push('');
-    output.push(res.body);
-    return output.join('\n');
-}
-
 routes.GET['/'] = function (req) {
     var body = `<html>
 <body>
@@ -115,6 +102,20 @@ routes.POST['/api/gimme'] = function (req) {
             body: responseBody
         });
     }
+}
+
+/** Helper function to format an object into a valid http response string */
+function formatResponse(res) {
+    var output = [];
+    output.push('HTTP/1.1 ' + res.status);
+    if (res.headers) {
+        for (var key in res.headers) {
+            output.push(`${key}: ${res.headers[key]}`)
+        }
+    }
+    output.push('');
+    output.push(res.body);
+    return output.join('\n');
 }
 
 for (var method in routes) {

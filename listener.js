@@ -1,6 +1,7 @@
 const net = require('net');
 const Server = require('./server').Server;
 
+/** Opens a socket on port and serves http requests */
 function listen(routes, port) {
     var clients = {};
     var listener = net.createServer(function (socket) {

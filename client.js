@@ -4,6 +4,11 @@ const PROMPT = 'client: ';
 
 const requestPattern = /^([^ ]*) (.*)$/
 
+/**
+ * Client is a command line client meant to mimic a real http client. It
+ * displays exactly the data that's sent by the client and received from
+ * the server to get a better picture of how the http protocol works.
+ */
 class Client {
     constructor(server) {
         const rl = readline.createInterface({
