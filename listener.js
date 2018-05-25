@@ -28,6 +28,7 @@ function listen(routes, port) {
             socket.end();
         });
     });
+    console.log(`listening on http://localhost:${port}`);
     listener.listen(port);
 }
 
