@@ -71,21 +71,32 @@ class Server {
 
     dispatch(req) {
         var routesByMethod = this.routes[req.method]
+        var output = '';
         if (typeof routesByMethod === 'object') {
             var route = routesByMethod[req.path];
             if (typeof route === 'function') {
-                var response = route(req);
+                try {
+                    var response = route(req);
+                } catch (err) {
+                    var lines = err.stack.split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        console.log(`internal: ${lines[i]}`);
+                    }
+                    output = 'HTTP/1.1 500 Internal Server Error\n';
+                }
                 if (typeof response === 'string') {
-                    return response;
+                    output = response;
                 } else {
-                    return 'HTTP/1.1 500 Internal Server Error\n';
+                    console.log(`internal: Expecting a string out from route ${req.method} ${req.path}, received ${typeof response} instead`);
+                    output = 'HTTP/1.1 500 Internal Server Error\n';
                 }
             } else {
-                return 'HTTP/1.1 404 Not Found\n';
+                output = 'HTTP/1.1 404 Not Found\n';
             }
         } else {
-            return 'HTTP/1.1 405 Method Not Allowed\n';
+            output = 'HTTP/1.1 405 Method Not Allowed\n';
         }
+        return output;
     }
 }
 
