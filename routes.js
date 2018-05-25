@@ -5,20 +5,33 @@ const routes = {
     DELETE: {}
 };
 
+function formatResponse(res) {
+    var output = [];
+    output.push('HTTP/1.1 ' + res.status);
+    if (res.headers) {
+        for (var key in res.headers) {
+            output.push(`${key}: ${res.headers[key]}`)
+        }
+    }
+    output.push('');
+    output.push(res.body);
+    return output.join('\n');
+}
+
 routes.GET['/'] = function (req) {
     var body = `<html>
 <body>
     <p>Hello <a href="/world?foo=bar">world</a></p>
 </body>
 </html>`;
-    return {
+    return formatResponse({
         status: '200 OK',
         headers: {
             'Content-Type': 'text/html',
             'Content-Length': body.length,
         },
         body: body
-    };
+    });
 }
 
 routes.GET['/world'] = function (req) {
@@ -36,14 +49,14 @@ routes.GET['/world'] = function (req) {
 </body>
 </html>`
 
-    return {
+    return formatResponse({
         status: status,
         headers: {
             'Content-Type': 'text/html',
             'Content-Length': body.length,
         },
         body: body
-    }
+    });
 }
 
 var gimmeData = []
@@ -53,14 +66,14 @@ routes.GET['/api/gimme'] = function (req) {
         data: gimmeData
     };
     var body = JSON.stringify(responseData, null, 2);
-    return {
+    return formatResponse({
         status: '200 OK',
         headers: {
             'Content-Type': 'application/json',
             'Content-Length': body.length,
         },
         body: body
-    }
+    });
 }
 
 routes.POST['/api/gimme'] = function (req) {
@@ -72,35 +85,35 @@ routes.POST['/api/gimme'] = function (req) {
             var bodyObj = JSON.parse(body);
         } catch (err) {
             var responseBody = `Invalid json: ${body}`;
-            return {
+            return formatResponse({
                 status: '400 Bad Request',
                 headers: {
                     'Content-Type': 'text/plain',
                     'Content-Length': responseBody.length,
                 },
                 body: responseBody
-            }
+            });
         }
         gimmeData.push(bodyObj);
-        return {
+        return formatResponse({
             status: '200 OK',
             headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': 0,
             }
-        }
+        });
     } else {
         var responseBody = JSON.stringify({
             error: `Unknown Content-Type: ${contentType}`
         })
-        return {
+        return formatResponse({
             status: '400 Bad Request',
             headers: {
                 'Content-Type': 'application/json',
                 'Content-Length': responseBody.length,
             },
             body: responseBody
-        }
+        });
     }
 }
 

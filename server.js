@@ -40,7 +40,7 @@ class Server {
                 this.mode = this.readingBody;
             } else {
                 this.mode = this.readingNewRequests;
-                return this.handle(this.currentReq);
+                return this.dispatch(this.currentReq);
             }
         } else {
             var sepPos = line.indexOf(':');
@@ -59,28 +59,14 @@ class Server {
         line = line.trim();
         if (line === '') {
             this.mode = this.readingNewRequests;
-            return this.handle(this.currentReq);
+            return this.dispatch(this.currentReq);
         } else {
             this.currentReq.body += line;
             if (this.currentReq.body.length >= parseInt(this.currentReq.headers['Content-Length'])) {
                 this.mode = this.readingNewRequests;
-                return this.handle(this.currentReq);
+                return this.dispatch(this.currentReq);
             }
         }
-    }
-
-    handle(req) {
-        var res = this.dispatch(req);
-        var output = [];
-        output.push('HTTP/1.1 ' + res.status);
-        if (res.headers) {
-            for (var key in res.headers) {
-                output.push(`${key}: ${res.headers[key]}`)
-            }
-        }
-        output.push('');
-        output.push(res.body);
-        return output.join('\n');
     }
 
     dispatch(req) {
@@ -89,22 +75,16 @@ class Server {
             var route = routesByMethod[req.path];
             if (typeof route === 'function') {
                 var response = route(req);
-                if (typeof response === 'object') {
+                if (typeof response === 'string') {
                     return response;
                 } else {
-                    return {
-                        status: '500 Internal Server Error'
-                    }
+                    return 'HTTP/1.1 500 Internal Server Error\n';
                 }
             } else {
-                return {
-                    status: '404 Not Found'
-                }
+                return 'HTTP/1.1 404 Not Found\n';
             }
         } else {
-            return {
-                status: '405 Method Not Allowed'
-            }
+            return 'HTTP/1.1 405 Method Not Allowed\n';
         }
     }
 }
