@@ -12,11 +12,18 @@ they need it (or don't need it).
 
 To run a mock http repl:
 
+```
 node main.js
+```
+
+When the prompt comes up, try typing `GET /`
+
 
 To run a real http server:
 
+```
 node main.js 9000
+```
 
 The parameter is the port to listen on. In this case, opening http://localhost:9000/
 would hit the server.
